@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt, { hash } from "bcrypt";
+import bcrypt from "bcrypt";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -31,17 +31,17 @@ const UserSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ["developer", "principle", "admin", "student"],
-      default: "student",
+      enum: ["root", "sudo", "user", "guest"],
+      default: "guest",
     },
     acessLevels: {
       type: Number,
       default: function () {
         const acessLevel = {
-          developer: 1000,
-          principle: 500,
-          admin: 250,
-          student: 100,
+          root: 1000,
+          sudo: 500,
+          user: 250,
+          guest: 100,
         };
         return acessLevel[this.role] || 100;
       },
@@ -52,15 +52,16 @@ const UserSchema = new mongoose.Schema(
       default: "pending",
     },
     permissions: {
-      type: {
-        canCreateUsers: {
-          developer: { type: Boolean, default: false },
-          principle: { type: Boolean, default: false },
-          admin: { type: Boolean, default: false },
-          student: { type: Boolean, default: false },
-        },
+      type: Array,
+      default: function () {
+        const permission = {
+          root: ["sudo", "user", "guest"],
+          sudo: ["user", "guest"],
+          user: ["guest"],
+          guest: [],
+        };
+        return permission[this.role] || [];
       },
-      default: {},
     },
     loginAttempt: {
       type: Number,
@@ -76,39 +77,24 @@ const UserSchema = new mongoose.Schema(
       default: null,
     },
   },
-  {
-    timestamps: true,
-    methods: {
-      async comparePassword() {
-        return bcrypt.compare(userPassword, this.password);
-      },
-    },
-
-    canCreateUser(tagetRole) {
-      const creationRules = {
-        developer: ["principle", "admin", "student"],
-        principle: ["admin", "student"],
-        admin: ["student"],
-        student: [],
-      };
-
-      return creationRules(this.role)?.includes(tagetRole) || false;
-    },
-  }
+  { timestamps: true }
 );
 
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+// Methods
+UserSchema.methods.comparePassword = function (userPassword) {
+  return bcrypt.compare(userPassword, this.password);
+};
 
-  try {
-    const hashedPassword = await bcrypt.hash(this.password, 10);
-    this.password = hashedPassword;
+UserSchema.methods.canCreateUser = function (targetRole) {
+  const creationRules = {
+    root: ["sudo", "user", "guest"],
+    sudo: ["user", "guest"],
+    user: ["guest"],
+    guest: [],
+  };
 
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+  return creationRules[this.role]?.includes(targetRole) || false;
+};
 
 UserSchema.methods.incrementLoginAttempts = function () {
   this.loginAttempt += 1;
@@ -120,6 +106,17 @@ UserSchema.methods.resetLoginAttempts = function () {
   return this.save();
 };
 
-const User = mongoose.model("User", UserSchema);
+// Middleware
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
 
+  try {
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+const User = mongoose.model("User", UserSchema);
 export default User;
