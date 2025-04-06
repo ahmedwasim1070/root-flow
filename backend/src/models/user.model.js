@@ -1,18 +1,18 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, "Full Name is requried"],
       trim: true,
     },
     email: {
+      unique: [true, "Email already exsist`s "],
       type: String,
       required: [true, "Email is required"],
       trim: true,
-      unique: true,
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         "Please fill a valid email address",
@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
-      minlength: [8, "Password should be at least 8 Characters"],
+      minlength: [8, "Password should be alteast 8 characters"],
     },
     role: {
       type: String,
@@ -46,11 +46,6 @@ const UserSchema = new mongoose.Schema(
         return acessLevel[this.role] || 100;
       },
     },
-    status: {
-      type: String,
-      enum: ["active", "pending", "suspended", "inactive"],
-      default: "pending",
-    },
     permissions: {
       type: Array,
       default: function () {
@@ -62,6 +57,11 @@ const UserSchema = new mongoose.Schema(
         };
         return permission[this.role] || [];
       },
+    },
+    status: {
+      type: String,
+      enum: ["active", "pending", "suspended", "inactive"],
+      default: "pending",
     },
     loginAttempt: {
       type: Number,
@@ -81,11 +81,11 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Methods
-UserSchema.methods.comparePassword = function (userPassword) {
-  return bcrypt.compare(userPassword, this.password);
+userSchema.methods.comparePassword = async function (userPassword) {
+  return await bcrypt.compare(userPassword, this.password);
 };
 
-UserSchema.methods.canCreateUser = function (targetRole) {
+userSchema.methods.canCreateUser = function (targetRole) {
   const creationRules = {
     root: ["sudo", "user", "guest"],
     sudo: ["user", "guest"],
@@ -96,18 +96,18 @@ UserSchema.methods.canCreateUser = function (targetRole) {
   return creationRules[this.role]?.includes(targetRole) || false;
 };
 
-UserSchema.methods.incrementLoginAttempts = function () {
+userSchema.methods.incrementLoginAttempts = function () {
   this.loginAttempt += 1;
   return this.save();
 };
 
-UserSchema.methods.resetLoginAttempts = function () {
+userSchema.methods.resetLoginAttempts = function () {
   this.loginAttempt = 0;
   return this.save();
 };
 
 // Middleware
-UserSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   try {
@@ -118,5 +118,5 @@ UserSchema.pre("save", async function (next) {
   }
 });
 
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", userSchema);
 export default User;
