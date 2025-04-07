@@ -1,8 +1,24 @@
 import User from "../models/user.model.js";
 import { createToken } from "../lib/utils.js";
 
-export const signup = (req, res) => {
+export const checkRoot = async (req, res) => {
+  try {
+    const user = await User.findOne({ role: "root" });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ exsists: false, message: "Root does not exsists" });
+    }
+    return res
+      .status(200)
+      .json({ exsists: true, message: "Root user exsists" });
+  } catch (error) {
+    console.error("Error in checkRoot controller :", error);
+    return res.status(500).json({ message: "Internel Server Error!" });
+  }
 };
+
+export const signup = (req, res) => {};
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
