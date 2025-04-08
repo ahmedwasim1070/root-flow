@@ -1,10 +1,69 @@
 import User from "../models/user.model.js";
 import { createToken } from "../lib/utils.js";
 
-export const checkRoot = async (req, res) => {
+export const registerRoot = async (req, res) => {
+  const { fullName, email, contactNumber, password, role, status } = req.body;
   try {
-    const user = await User.findOne({ role: "root" });
-    if (!user) {
+    if (!fullName || !email || !contactNumber || !password || !role || !status)
+      return res.status(400).json({ message: "All fields are required" });
+
+    const isRoot = await User.findOne({ role });
+    if (isRoot)
+      return res.status(409).json({ message: "Root user already exsist's" });
+
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{0,3})+$/;
+    if (!emailRegex.test(email))
+      return res.status(400).json({ message: "Enter the valid Email" });
+
+    const root = await User.findOne({ email });
+    if (root) {
+      return res
+        .status(409)
+        .json({ message: "Email is already registered with one account" });
+    }
+    const phoneRegex = /^\+?\d{10,14}$/;
+    if (!phoneRegex.test(contactNumber)) {
+      res.status(400).json({ message: "Invalid phone number !" });
+    }
+
+    if (!password.length <= 8) {
+      res.status(400).json({ message: "Invalid password !" });
+    }
+
+    const newRoot = new User({
+      fullName,
+      email,
+      contactNumber,
+      password,
+      role,
+      status,
+    });
+    await newRoot.save();
+
+    const payload = {
+      id: newRoot._id,
+      fullName: newRoot.fullName,
+      email: newRoot.email,
+      role: newRoot.role,
+    };
+
+    const token = createToken(payload, res);
+
+    return res.status(200).json({
+      message: "Root user registered successfully ! ",
+      token,
+      user: payload,
+    });
+  } catch (error) {
+    console.error("Error in registerRoot controller :", error);
+    return res.status(500).json({ message: "Internel server error" });
+  }
+};
+
+export const checkRoot = async (res) => {
+  try {
+    const isRoot = await User.findOne({ role: "root" });
+    if (!isRoot) {
       return res
         .status(404)
         .json({ exsists: false, message: "Root does not exsists" });
@@ -51,34 +110,12 @@ export const login = async (req, res) => {
 
     const token = createToken(payload, res);
 
-    res.status(200).json({ message: "Login successful", token, user: payload });
     console.log(`${user.email} just logged in`);
+    return res
+      .status(200)
+      .json({ message: "Login successful", token, user: payload });
   } catch (error) {
-    res.status(500).json({ message: "Internel Server error" });
-    console.log(`Error in Login Controller : ${error}`);
+    console.error("Error in Login Controller : ", error);
+    return res.status(500).json({ message: "Internel Server error" });
   }
 };
-
-// const regRoot = async (res) => {
-//   try {
-//     const regRoot = await User.findOne({ role: "root" });
-//     if (!regRoot) {
-//       const rootUserPayload = {
-//         fullName: "David Snowden",
-//         email: "davidsnowden911@gmail.com",
-//         contactNumber: "19182283675",
-//         password: "qwerty123",
-//         role: "root",
-//         status: "active",
-//       };
-
-//       const rootUser = new User(rootUserPayload);
-//       rootUser.save();
-//       return res.status(200).json({ message: "Root user initialized ! " });
-//     }
-//     res.status(200).json({ message: "Root User already exsists" });
-//   } catch (error) {
-//     res.status(500).json({ message: "Internel Server Errror" });
-//     console.log(`Error during registering root user ${error}`);
-//   }
-// };
