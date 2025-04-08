@@ -34,7 +34,7 @@ function App() {
           />
           <Route
             path="/signup/root"
-            element={<RootSignup apiRoute={apiRoute} />}
+            element={<RootSignup apiRoute={apiRoute} setIsRoot={setIsRoot} />}
           />
         </Routes>
       </Router>

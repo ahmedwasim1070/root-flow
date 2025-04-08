@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 
-function RootSignup({ apiRoute }) {
+import { signupRoot } from "../utils/signupRoot";
+
+function RootSignup({ apiRoute, setIsRoot }) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -56,7 +58,7 @@ function RootSignup({ apiRoute }) {
     }
 
     if (targetName === "password") {
-      if (targetValue.length < 8) {
+      if (targetValue.length <= 8) {
         setErrorForm({ ...errorForm, [targetName]: true });
         setDisableSubmit(true);
       } else {
@@ -78,12 +80,28 @@ function RootSignup({ apiRoute }) {
     setFormData({ ...formData, [targetName]: targetValue });
   };
 
-  const handleSubmit = () => {};
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (disableSubmit != true) {
+      signupRoot(apiRoute, formData, setIsRoot)
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Error in API : ", error);
+        });
+    }
+  };
 
   return (
     <>
       <div className="h-[100vh] flex items-center justify-center">
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(e) => {
+            handleSubmit(e);
+          }}
+        >
           <fieldset className="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
             <legend className="fieldset-legend">Root Signup</legend>
 
