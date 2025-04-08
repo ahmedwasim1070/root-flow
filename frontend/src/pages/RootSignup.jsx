@@ -84,9 +84,17 @@ function RootSignup({ apiRoute, setIsRoot }) {
     e.preventDefault();
 
     if (disableSubmit != true) {
-      signupRoot(apiRoute, formData, setIsRoot)
+      signupRoot(apiRoute + "signup/root", formData, setIsRoot)
         .then((data) => {
           console.log(data);
+
+          setFormData({
+            fullName: "",
+            email: "",
+            contactNumber: "",
+            password: "",
+            confirmPassword: "",
+          });
         })
         .catch((error) => {
           console.error("Error in API : ", error);

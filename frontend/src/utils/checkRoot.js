@@ -11,7 +11,7 @@ export async function checkRoot(url, setIsRoot) {
 
     return data;
   } catch (error) {
-    console.error(`API Error : ${error}`);
+    console.error('API Error : ', error)
     setIsRoot(false);
     throw error;
   }

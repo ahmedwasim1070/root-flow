@@ -1,10 +1,16 @@
 import express from "express";
-import { checkRoot, signup, login } from "../controllers/user.controller.js";
+import {
+  registerRoot,
+  isRoot,
+  signup,
+  login,
+} from "../controllers/user.controller.js";
 
 const router = express.Router();
 
-router.get("/checkRoot", checkRoot);
+router.post("/signup/root", registerRoot);
+router.get("/checkRoot", isRoot);
 router.post("/signup", signup);
-router.post("/login", login);
+router.post("/login", verifyToken, login);
 
 export default router;

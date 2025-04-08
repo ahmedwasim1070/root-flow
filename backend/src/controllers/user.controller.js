@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import { createToken } from "../lib/utils.js";
 
+// Signup's ROOt user
 export const registerRoot = async (req, res) => {
   const { fullName, email, contactNumber, password, role, status } = req.body;
   try {
@@ -23,11 +24,11 @@ export const registerRoot = async (req, res) => {
     }
     const phoneRegex = /^\+?\d{10,14}$/;
     if (!phoneRegex.test(contactNumber)) {
-      res.status(400).json({ message: "Invalid phone number !" });
+      return res.status(400).json({ message: "Invalid phone number !" });
     }
 
-    if (!password.length <= 8) {
-      res.status(400).json({ message: "Invalid password !" });
+    if (password.length <= 8) {
+      return res.status(400).json({ message: "Invalid password !" });
     }
 
     const newRoot = new User({
@@ -47,11 +48,9 @@ export const registerRoot = async (req, res) => {
       role: newRoot.role,
     };
 
-    const token = createToken(payload, res);
-
+    console.log(`${newRoot.email} just got registered as root`);
     return res.status(200).json({
       message: "Root user registered successfully ! ",
-      token,
       user: payload,
     });
   } catch (error) {
@@ -60,7 +59,8 @@ export const registerRoot = async (req, res) => {
   }
 };
 
-export const checkRoot = async (res) => {
+// Check's ROOT uesr
+export const isRoot = async (req, res) => {
   try {
     const isRoot = await User.findOne({ role: "root" });
     if (!isRoot) {
@@ -76,6 +76,7 @@ export const checkRoot = async (res) => {
     return res.status(500).json({ message: "Internel Server Error!" });
   }
 };
+
 
 export const signup = (req, res) => {};
 
@@ -110,7 +111,7 @@ export const login = async (req, res) => {
 
     const token = createToken(payload, res);
 
-    console.log(`${user.email} just logged in`);
+    console.log(`${user.email} just logged in , ${user.role}`);
     return res
       .status(200)
       .json({ message: "Login successful", token, user: payload });
