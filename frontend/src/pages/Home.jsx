@@ -1,7 +1,12 @@
-function Home() {
+function Home(authUser) {
   return (
-    <div>Home</div>
-  )
+    <>
+      <h1>Home</h1>
+      <div>
+        <p>{JSON.stringify(authUser)}</p>
+      </div>
+    </>
+  );
 }
 
-export default Home
+export default Home;

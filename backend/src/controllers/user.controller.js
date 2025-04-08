@@ -1,7 +1,17 @@
 import User from "../models/user.model.js";
 import { createToken } from "../lib/utils.js";
 
-// Signup's ROOt user
+// Verify user
+export const checkUser = (req, res) => {
+  try {
+    res.status(200).json({ user: req.user });
+  } catch (error) {
+    console.log("Error in checkUser controller : ", error);
+    res.status(500).json({ message: "Internel server error !" });
+  }
+};
+
+// Signup's ROOT user
 export const registerRoot = async (req, res) => {
   const { fullName, email, contactNumber, password, role, status } = req.body;
   try {
@@ -76,7 +86,6 @@ export const isRoot = async (req, res) => {
     return res.status(500).json({ message: "Internel Server Error!" });
   }
 };
-
 
 export const signup = (req, res) => {};
 

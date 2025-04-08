@@ -1,5 +1,7 @@
 import express from "express";
+import { protectRoute } from "../middlewares/auth.middleware.js";
 import {
+  checkUser,
   registerRoot,
   isRoot,
   signup,
@@ -8,9 +10,10 @@ import {
 
 const router = express.Router();
 
+router.get("/check/user", protectRoute, checkUser);
 router.post("/signup/root", registerRoot);
 router.get("/checkRoot", isRoot);
 router.post("/signup", signup);
-router.post("/login", verifyToken, login);
+router.post("/login", login);
 
 export default router;

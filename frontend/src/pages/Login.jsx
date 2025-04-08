@@ -1,9 +1,10 @@
 import React, { StrictMode, useState } from "react";
-import cookie from "js-cookie";
+
+import Cookies from "js-cookie";
 
 import { loginUser } from "../utils/loginUser";
 
-function Login({ apiRoute, setIsLogin }) {
+function Login({ apiRoute, setAuthUser }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -48,11 +49,11 @@ function Login({ apiRoute, setIsLogin }) {
     e.preventDefault();
 
     if (disableSubmit != true) {
-      loginUser(apiRoute + "login", formData, setIsLogin)
+      loginUser(apiRoute + "login", formData)
         .then((data) => {
-          console.log(data);
+          setAuthUser(data.user);
 
-          cookie.set("secret_key", data.token, {
+          Cookies.set("secret_key", data.token, {
             expires: 7,
             sameSite: "strict",
             secure: import.meta.env.VITE_IS_DEVELOPMENT !== "development",

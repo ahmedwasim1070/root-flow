@@ -1,18 +1,10 @@
-export async function checkRoot(url, setIsRoot) {
+export async function checkRoot(url) {
   try {
     const response = await fetch(url);
-    const data = await response.json();
 
-    if (response.ok) {
-      setIsRoot(true);
-    } else {
-      setIsRoot(false);
-    }
-
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error('API Error : ', error)
-    setIsRoot(false);
+    console.error("API Error : ", error);
     throw error;
   }
 }

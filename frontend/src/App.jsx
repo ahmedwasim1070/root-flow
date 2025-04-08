@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 
 import { checkRoot } from "./utils/checkRoot";
-import { loginUser } from "./utils/loginUser";
+import { checkAuth } from "./utils/checkAuth";
 
 import Home from "./pages/Home";
 import RootSignup from "./pages/RootSignup";
@@ -17,16 +17,21 @@ function App() {
   const apiRoute = import.meta.env.VITE_API_AUTH;
 
   const [isRoot, setIsRoot] = useState(true);
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authUser, setAuthUser] = useState({});
 
   useEffect(() => {
-    checkRoot(apiRoute + "checkRoot", setIsRoot)
+    checkRoot(apiRoute + "checkRoot")
       .then((data) => {
-        console.log(data.exsists, data.message);
+        setIsRoot(data.exsists);
       })
       .catch((error) => console.error("Fetch Failed : ", error));
 
-    loginUser(apiRoute + "login", "null", setIsLogin);
+    checkAuth(apiRoute + "check/user", setIsLoggedIn)
+      .then((data) => {
+        setAuthUser(data.user);
+      })
+      .catch((error) => console.error("Fetch Failed from checkAuth : ", error));
   }, []);
 
   return (
@@ -35,7 +40,17 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={isRoot ? <Home /> : <Navigate to="/signup/root" />}
+            element={
+              isRoot ? (
+                isLoggedIn ? (
+                  <Home authUser={authUser} />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              ) : (
+                <Navigate to="/signup/root" />
+              )
+            }
           />
           <Route
             path="/signup/root"
@@ -50,10 +65,10 @@ function App() {
           <Route
             path="/login"
             element={
-              isLogin ? (
+              isLoggedIn ? (
                 <Navigate to="/" />
               ) : (
-                <Login apiRoute={apiRoute} setIsLogin={setIsLogin} />
+                <Login apiRoute={apiRoute} setAuthUser={setAuthUser} />
               )
             }
           />
