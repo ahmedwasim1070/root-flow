@@ -1,10 +1,8 @@
-import React, { StrictMode, useState } from "react";
-
-import Cookies from "js-cookie";
+import React, { useState } from "react";
 
 import { loginUser } from "../utils/loginUser";
 
-function Login({ apiRoute, setAuthUser }) {
+function Login({ apiRoute, setAuthUser, setIsLoggedIn }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -49,20 +47,16 @@ function Login({ apiRoute, setAuthUser }) {
     e.preventDefault();
 
     if (disableSubmit != true) {
-      loginUser(apiRoute + "login", formData)
+      loginUser(apiRoute + "login", formData, setAuthUser, setIsLoggedIn)
         .then((data) => {
-          setAuthUser(data.user);
-
-          Cookies.set("secret_key", data.token, {
-            expires: 7,
-            sameSite: "strict",
-            secure: import.meta.env.VITE_IS_DEVELOPMENT !== "development",
-          });
+          console.log(data.message);
 
           setFormData({
             email: "",
             password: "",
           });
+
+          window.location.reload();
         })
         .catch((error) => {
           console.error("Error in API : ", error);

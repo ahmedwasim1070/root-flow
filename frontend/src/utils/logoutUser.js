@@ -1,4 +1,4 @@
-export const checkAuth = async (url, setIsLoggedIn, setAuthUser) => {
+export const logoutUser = async (url, setIsLoggedIn, setAuthUser) => {
   try {
     const response = await fetch(url, {
       credentials: "include",
@@ -6,11 +6,10 @@ export const checkAuth = async (url, setIsLoggedIn, setAuthUser) => {
     const data = await response.json();
 
     if (!response.ok) {
+      setIsLoggedIn(true);
+    } else {
       setIsLoggedIn(false);
       setAuthUser({});
-    } else {
-      setIsLoggedIn(true);
-      setAuthUser(data.user);
     }
 
     return data;

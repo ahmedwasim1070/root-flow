@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { signupRoot } from "../utils/signupRoot";
 
 function RootSignup({ apiRoute, setIsRoot }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -86,7 +88,7 @@ function RootSignup({ apiRoute, setIsRoot }) {
     if (disableSubmit != true) {
       signupRoot(apiRoute + "signup/root", formData, setIsRoot)
         .then((data) => {
-          console.log(data);
+          setIsRoot(false);
 
           setFormData({
             fullName: "",
@@ -95,6 +97,7 @@ function RootSignup({ apiRoute, setIsRoot }) {
             password: "",
             confirmPassword: "",
           });
+          navigate("/");
         })
         .catch((error) => {
           console.error("Error in API : ", error);

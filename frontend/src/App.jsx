@@ -12,6 +12,7 @@ import { checkAuth } from "./utils/checkAuth";
 import Home from "./pages/Home";
 import RootSignup from "./pages/RootSignup";
 import Login from "./pages/Login";
+import Logout from "./pages/Logout";
 
 function App() {
   const apiRoute = import.meta.env.VITE_API_AUTH;
@@ -21,15 +22,15 @@ function App() {
   const [authUser, setAuthUser] = useState({});
 
   useEffect(() => {
-    checkRoot(apiRoute + "checkRoot")
+    checkRoot(apiRoute + "checkRoot", setIsRoot)
       .then((data) => {
-        setIsRoot(data.exsists);
+        console.log(data.message);
       })
       .catch((error) => console.error("Fetch Failed : ", error));
 
-    checkAuth(apiRoute + "check/user", setIsLoggedIn)
+    checkAuth(apiRoute + "check/user", setIsLoggedIn, setAuthUser)
       .then((data) => {
-        setAuthUser(data.user);
+        console.log(data.message);
       })
       .catch((error) => console.error("Fetch Failed from checkAuth : ", error));
   }, []);
@@ -68,7 +69,25 @@ function App() {
               isLoggedIn ? (
                 <Navigate to="/" />
               ) : (
-                <Login apiRoute={apiRoute} setAuthUser={setAuthUser} />
+                <Login
+                  apiRoute={apiRoute}
+                  setAuthUser={setAuthUser}
+                  setIsLoggedIn={setIsLoggedIn}
+                />
+              )
+            }
+          />
+          <Route
+            path="/logout"
+            element={
+              isLoggedIn ? (
+                <Logout
+                  apiRoute={apiRoute}
+                  setIsLoggedIn={setIsLoggedIn}
+                  setAuthUser={setAuthUser}
+                />
+              ) : (
+                <Navigate to="/" />
               )
             }
           />

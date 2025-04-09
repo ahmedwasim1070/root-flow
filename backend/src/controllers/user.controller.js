@@ -4,7 +4,7 @@ import { createToken } from "../lib/utils.js";
 // Verify user
 export const checkUser = (req, res) => {
   try {
-    res.status(200).json({ user: req.user });
+    res.status(200).json({ message: "Logged in though Token", user: req.user });
   } catch (error) {
     console.log("Error in checkUser controller : ", error);
     res.status(500).json({ message: "Internel server error !" });
@@ -51,17 +51,12 @@ export const registerRoot = async (req, res) => {
     });
     await newRoot.save();
 
-    const payload = {
-      id: newRoot._id,
-      fullName: newRoot.fullName,
-      email: newRoot.email,
-      role: newRoot.role,
-    };
+    const { password: _removed, ...safeUser } = newRoot._doc;
 
     console.log(`${newRoot.email} just got registered as root`);
     return res.status(200).json({
       message: "Root user registered successfully ! ",
-      user: payload,
+      user: safeUser,
     });
   } catch (error) {
     console.error("Error in registerRoot controller :", error);
@@ -74,13 +69,10 @@ export const isRoot = async (req, res) => {
   try {
     const isRoot = await User.findOne({ role: "root" });
     if (!isRoot) {
-      return res
-        .status(404)
-        .json({ exsists: false, message: "Root does not exsists" });
+      return res.status(404).json({ message: "Root does not exsists" });
     }
-    return res
-      .status(200)
-      .json({ exsists: true, message: "Root user exsists" });
+
+    return res.status(200).json({ message: "Root user exsists" });
   } catch (error) {
     console.error("Error in checkRoot controller :", error);
     return res.status(500).json({ message: "Internel Server Error!" });
@@ -91,6 +83,7 @@ export const signup = (req, res) => {};
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
+
   try {
     if (!email || !password)
       return res.status(400).json({ message: "All Fields are required !" });
@@ -111,21 +104,32 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid Credentials" });
     }
 
-    const payload = {
-      id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-    };
-
-    const token = createToken(payload, res);
+    const { password: _removed, ...safeUser } = user._doc;
+    const token = createToken(user._id, res);
 
     console.log(`${user.email} just logged in , ${user.role}`);
-    return res
-      .status(200)
-      .json({ message: "Login successful", token, user: payload });
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: safeUser,
+    });
   } catch (error) {
     console.error("Error in Login Controller : ", error);
+    return res.status(500).json({ message: "Internel Server error" });
+  }
+};
+
+export const logout = (req, res) => {
+  try {
+    res.clearCookie("secret_key", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV !== "development",
+    });
+
+    return res.status(200).json({ message: "Logged out sucessfully" });
+  } catch (error) {
+    console.error("Error in logout controller : ", error);
     return res.status(500).json({ message: "Internel Server error" });
   }
 };
