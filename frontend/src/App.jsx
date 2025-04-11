@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import RootSignup from "./pages/RootSignup";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
+import Signup from "./pages/Signup";
 
 function App() {
   const apiRoute = import.meta.env.VITE_API_AUTH;
@@ -44,7 +45,7 @@ function App() {
             element={
               isRoot ? (
                 isLoggedIn ? (
-                  <Home authUser={authUser} />
+                  <Home apiRoute={apiRoute} authUser={authUser} />
                 ) : (
                   <Navigate to="/login" />
                 )
@@ -75,6 +76,12 @@ function App() {
                   setIsLoggedIn={setIsLoggedIn}
                 />
               )
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              isLoggedIn ? <Navigate to="/" /> : <Signup apiRoute={apiRoute} />
             }
           />
           <Route

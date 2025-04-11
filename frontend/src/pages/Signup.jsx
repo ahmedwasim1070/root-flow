@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { signupRoot } from "../utils/signupRoot";
+import { signupUser } from "../utils/signupUser.js";
 
-function RootSignup({ apiRoute, setIsRoot }) {
+function Signup({ apiRoute }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
@@ -86,7 +86,7 @@ function RootSignup({ apiRoute, setIsRoot }) {
     e.preventDefault();
 
     if (disableSubmit != true) {
-      signupRoot(apiRoute + "signup/root", formData, setIsRoot)
+      signupUser(apiRoute + "signup", formData)
         .then((data) => {
           setFormData({
             fullName: "",
@@ -95,7 +95,7 @@ function RootSignup({ apiRoute, setIsRoot }) {
             password: "",
             confirmPassword: "",
           });
-          navigate("/");
+          navigate("/login");
         })
         .catch((error) => {
           console.error("Error in API : ", error);
@@ -208,4 +208,4 @@ function RootSignup({ apiRoute, setIsRoot }) {
   );
 }
 
-export default RootSignup;
+export default Signup;

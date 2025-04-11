@@ -1,6 +1,19 @@
+import { useEffect } from "react";
 import { Header } from "../components/Header";
 
-function Home({ authUser }) {
+import { queryUser } from "../utils/queryUser";
+
+function Home({ apiRoute, authUser }) {
+  useEffect(() => {
+    queryUser(apiRoute + "queryUser", authUser)
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error(`Error in API : ${error}`);
+      });
+  }, []);
+
   return (
     <>
       <Header authUser={authUser} />
