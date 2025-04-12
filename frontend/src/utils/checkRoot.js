@@ -5,8 +5,8 @@ export async function checkRoot(url, setIsRoot) {
 
     if (!response.ok) {
       setIsRoot(false);
-    } else {
-      setIsRoot(true);
+      console.error("Error From API :", data.message);
+      throw new Error(data.message);
     }
 
     return data;

@@ -1,4 +1,4 @@
-export async function loginUser(url, formData, setAuthUser, setIsLoggedIn) {
+export async function loginUser(url, formData) {
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -11,13 +11,8 @@ export async function loginUser(url, formData, setAuthUser, setIsLoggedIn) {
     const data = await response.json();
 
     if (!response.ok) {
-      setAuthUser({});
-
-      setIsLoggedIn(false);
-    } else {
-      setAuthUser(data.user);
-
-      setIsLoggedIn(true);
+      console.error("Error From API :", data.message);
+      throw new Error(data.message);
     }
 
     return data;

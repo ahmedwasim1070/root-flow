@@ -6,10 +6,7 @@ export const logoutUser = async (url, setIsLoggedIn, setAuthUser) => {
     const data = await response.json();
 
     if (!response.ok) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-      setAuthUser({});
+      console.error("Error from API : ", data.message);
     }
 
     return data;

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 import { signupRoot } from "../utils/signupRoot";
 
@@ -86,16 +87,22 @@ function RootSignup({ apiRoute, setIsRoot }) {
     e.preventDefault();
 
     if (disableSubmit != true) {
-      signupRoot(apiRoute + "signup/root", formData, setIsRoot)
+      signupRoot(apiRoute + "signup/root", formData)
         .then((data) => {
-          setFormData({
-            fullName: "",
-            email: "",
-            contactNumber: "",
-            password: "",
-            confirmPassword: "",
-          });
-          navigate("/");
+          if (data.user) {
+            setIsRoot(true);
+            toast.success("Successfully registered Root user!");
+
+            setFormData({
+              fullName: "",
+              email: "",
+              contactNumber: "",
+              password: "",
+              confirmPassword: "",
+            });
+
+            navigate("/");
+          }
         })
         .catch((error) => {
           console.error("Error in API : ", error);
@@ -197,7 +204,7 @@ function RootSignup({ apiRoute, setIsRoot }) {
             <button
               type="submit"
               disabled={disableSubmit}
-              className="btn btn-neutral mt-4"
+              className="btn btn-primary duration-75 hover:btn-neutral mt-4"
             >
               Signup
             </button>

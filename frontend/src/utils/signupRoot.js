@@ -1,4 +1,4 @@
-export async function signupRoot(url, formData, setIsRoot) {
+export async function signupRoot(url, formData) {
   try {
     const { confirmPassword, ...dataToSend } = formData;
     const rootData = {
@@ -14,17 +14,16 @@ export async function signupRoot(url, formData, setIsRoot) {
       },
       body: JSON.stringify(rootData),
     });
+    const data = await response.json();
 
-    if (response.ok) {
-      setIsRoot(true);
-    } else {
-      setIsRoot(false);
+    if (!response.ok) {
+      console.error(`Error from API : `, data.message);
+      throw new Error(data.message);
     }
 
-    return await response.json();
+    return data;
   } catch (error) {
     console.error("API Error : ", error);
-    setIsRoot(false);
     throw error;
   }
 }

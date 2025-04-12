@@ -34,25 +34,13 @@ const userSchema = new mongoose.Schema(
       enum: ["root", "sudo", "user", "guest"],
       default: "guest",
     },
-    acessLevels: {
-      type: Number,
-      default: function () {
-        const acessLevel = {
-          root: 1000,
-          sudo: 500,
-          user: 250,
-          guest: 100,
-        };
-        return acessLevel[this.role] || 100;
-      },
-    },
     permissions: {
       type: Array,
       default: function () {
         const permission = {
-          root: ["sudo", "user", "guest"],
-          sudo: ["user", "guest"],
-          user: ["guest"],
+          root: ["root", "sudo", "user", "guest"],
+          sudo: ["sudo", "user", "guest"],
+          user: ["user", "guest"],
           guest: [],
         };
         return permission[this.role] || [];

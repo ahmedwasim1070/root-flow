@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Toaster, toast } from "react-hot-toast";
+
+import { Link, useNavigate } from "react-router-dom";
 
 import { loginUser } from "../utils/loginUser";
+import { checkAuth } from "../utils/checkAuth";
 
 function Login({ apiRoute, setAuthUser, setIsLoggedIn }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,16 +52,25 @@ function Login({ apiRoute, setAuthUser, setIsLoggedIn }) {
     e.preventDefault();
 
     if (disableSubmit != true) {
-      loginUser(apiRoute + "login", formData, setAuthUser, setIsLoggedIn)
+      loginUser(apiRoute + "login", formData)
         .then((data) => {
-          console.log(data.message);
+          if (data.token) {
+            checkAuth(apiRoute + "check/user", setIsLoggedIn, setAuthUser)
+              .then((data) => {
+                toast.success("Logged in Sucessfully !");
+              })
+              .catch((error) =>
+                console.error("Fetch Failed from checkAuth : ", error)
+              );
 
-          setFormData({
-            email: "",
-            password: "",
-          });
+            setFormData({
+              email: "",
+              password: "",
+            });
 
-          window.location.reload();
+            navigate("/");
+            console.log(`Login process is , ${data.token !== undefined}`);
+          }
         })
         .catch((error) => {
           console.error("Error in API : ", error);
@@ -64,8 +78,19 @@ function Login({ apiRoute, setAuthUser, setIsLoggedIn }) {
     }
   };
 
+  useEffect(() => {
+    checkAuth(apiRoute + "check/user", setIsLoggedIn, setAuthUser)
+      .then((data) => {
+        console.log(data.message);
+      })
+      .catch((error) => console.error("Fetch Failed from checkAuth : ", error));
+  }, []);
+
   return (
     <>
+      <div>
+        <Toaster />
+      </div>
       <div className="h-[100vh] flex items-center justify-center">
         <form
           onSubmit={(e) => {
@@ -104,11 +129,23 @@ function Login({ apiRoute, setAuthUser, setIsLoggedIn }) {
               className={`input ${errorForm.password && `border-red-700`}`}
               placeholder="Password"
             />
+            <div className="text-center py-1">
+              <p className="text-accent">
+                Register ?{" "}
+                <Link
+                  className="text-secondary underline px-1 font-bold"
+                  to="/signup"
+                >
+                  Signup here
+                </Link>
+                .
+              </p>
+            </div>
 
             <button
               type="submit"
               disabled={disableSubmit}
-              className="btn btn-neutral mt-4"
+              className="btn btn-primary duration-75 hover:btn-neutral mt-4"
             >
               Login
             </button>

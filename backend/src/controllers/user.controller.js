@@ -71,12 +71,16 @@ export const isRoot = async (req, res) => {
   try {
     const isRoot = await User.findOne({ role: "root" });
     if (!isRoot) {
-      return res.status(404).json({ message: "Root does not exsists" });
+      return res
+        .status(404)
+        .json({ message: "Root does not exsists", exsists: false });
     }
 
-    return res.status(200).json({ message: "Root user exsists" });
+    return res
+      .status(200)
+      .json({ message: "Root user exsists", exsists: true });
   } catch (error) {
-    console.error("Error in checkRoot controller :", error);
+    console.error("Error in isRoot controller :", error);
     return res.status(500).json({ message: "Internel Server Error!" });
   }
 };
@@ -84,30 +88,45 @@ export const isRoot = async (req, res) => {
 export const signup = async (req, res) => {
   const { fullName, email, contactNumber, password, role, status } = req.body;
   try {
-    if (!fullName || !email || !contactNumber || !password || !role || !status)
-      return res.status(400).json({ message: "All fields are required" });
+    if (!fullName || !email || !contactNumber || !password)
+      return res
+        .status(400)
+        .json({ message: "All fields are required", isSignedUp: false });
 
-    if (role === "root" || status === "active" || "suspended" || "inactive")
-      return res.status(400).json({ message: "Invalid Request" });
+    if (
+      role === "root" ||
+      ["active", "suspended", "inactive"].includes(status)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invalid Request", isSignedUp: false });
+    }
 
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{0,3})+$/;
     if (!emailRegex.test(email))
-      return res.status(400).json({ message: "Enter the valid Email" });
+      return res
+        .status(400)
+        .json({ message: "Enter the valid Email", isSignedUp: false });
 
     const user = await User.findOne({ email });
     if (user) {
-      return res
-        .status(409)
-        .json({ message: "Email is already registered with one account" });
+      return res.status(409).json({
+        message: "Email is already registered with one account",
+        isSignedUp: false,
+      });
     }
 
     const phoneRegex = /^\+?\d{10,14}$/;
     if (!phoneRegex.test(contactNumber)) {
-      return res.status(400).json({ message: "Invalid phone number !" });
+      return res
+        .status(400)
+        .json({ message: "Invalid phone number !", isSignedUp: false });
     }
 
     if (password.length <= 8) {
-      return res.status(400).json({ message: "Invalid password !" });
+      return res
+        .status(400)
+        .json({ message: "Invalid password !", isSignedUp: false });
     }
 
     const newUser = new User({
@@ -120,12 +139,10 @@ export const signup = async (req, res) => {
     });
     await newUser.save();
 
-    const { password: _removed, ...safeUser } = newUser._doc;
-
     console.log(`${newUser.email} just got registered as root`);
     return res.status(200).json({
       message: "Root user registered successfully ! ",
-      user: safeUser,
+      isSignedUp: true,
     });
   } catch (error) {
     console.error("Error in registerRoot controller :", error);
@@ -156,14 +173,12 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid Credentials" });
     }
 
-    const { password: _removed, ...safeUser } = user._doc;
     const token = createToken(user._id, res);
 
     console.log(`${user.email} just logged in , ${user.role}`);
     return res.status(200).json({
       message: "Login successful",
       token,
-      user: safeUser,
     });
   } catch (error) {
     console.error("Error in Login Controller : ", error);
@@ -179,7 +194,9 @@ export const logout = (req, res) => {
       secure: process.env.NODE_ENV !== "development",
     });
 
-    return res.status(200).json({ message: "Logged out sucessfully" });
+    return res
+      .status(200)
+      .json({ message: "Logged out sucessfully", loggedOut: true });
   } catch (error) {
     console.error("Error in logout controller : ", error);
     return res.status(500).json({ message: "Internel Server error" });
@@ -187,7 +204,7 @@ export const logout = (req, res) => {
 };
 
 export const queryUser = async (req, res) => {
-  const { permissions } = req.user;
+  const { permissions } = req.user.user;
   try {
     const users = await User.find({ role: { $in: permissions } }).select(
       "-password"

@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 
 import { checkRoot } from "./utils/checkRoot";
-import { checkAuth } from "./utils/checkAuth";
 
 import Home from "./pages/Home";
 import RootSignup from "./pages/RootSignup";
@@ -25,21 +24,19 @@ function App() {
   useEffect(() => {
     checkRoot(apiRoute + "checkRoot", setIsRoot)
       .then((data) => {
-        console.log(data.message);
+        if (data.exsists) {
+          setIsRoot(data.exsists);
+          console.log(`Root user exists : ${data.exsists}`);
+        }
       })
       .catch((error) => console.error("Fetch Failed : ", error));
-
-    checkAuth(apiRoute + "check/user", setIsLoggedIn, setAuthUser)
-      .then((data) => {
-        console.log(data.message);
-      })
-      .catch((error) => console.error("Fetch Failed from checkAuth : ", error));
   }, []);
 
   return (
     <>
       <Router>
         <Routes>
+          {/* Home Route - Only accessible if isRoot and isLoggedIn */}
           <Route
             path="/"
             element={
@@ -54,6 +51,8 @@ function App() {
               )
             }
           />
+
+          {/* Root Signup - Only accessible if NOT isRoot */}
           <Route
             path="/signup/root"
             element={
@@ -64,37 +63,59 @@ function App() {
               )
             }
           />
+
+          {/* Login - Only accessible if isRoot */}
           <Route
             path="/login"
             element={
-              isLoggedIn ? (
-                <Navigate to="/" />
+              isRoot ? (
+                isLoggedIn ? (
+                  <Navigate to="/" />
+                ) : (
+                  <Login
+                    apiRoute={apiRoute}
+                    setAuthUser={setAuthUser}
+                    setIsLoggedIn={setIsLoggedIn}
+                  />
+                )
               ) : (
-                <Login
-                  apiRoute={apiRoute}
-                  setAuthUser={setAuthUser}
-                  setIsLoggedIn={setIsLoggedIn}
-                />
+                <Navigate to="/signup/root" />
               )
             }
           />
+
+          {/* Signup - Only accessible if isRoot */}
           <Route
             path="/signup"
             element={
-              isLoggedIn ? <Navigate to="/" /> : <Signup apiRoute={apiRoute} />
+              isRoot ? (
+                isLoggedIn ? (
+                  <Navigate to="/" />
+                ) : (
+                  <Signup apiRoute={apiRoute} />
+                )
+              ) : (
+                <Navigate to="/signup/root" />
+              )
             }
           />
+
+          {/* Logout - Only accessible if isRoot and isLoggedIn */}
           <Route
             path="/logout"
             element={
-              isLoggedIn ? (
-                <Logout
-                  apiRoute={apiRoute}
-                  setIsLoggedIn={setIsLoggedIn}
-                  setAuthUser={setAuthUser}
-                />
+              isRoot ? (
+                isLoggedIn ? (
+                  <Logout
+                    apiRoute={apiRoute}
+                    setIsLoggedIn={setIsLoggedIn}
+                    setAuthUser={setAuthUser}
+                  />
+                ) : (
+                  <Navigate to="/" />
+                )
               ) : (
-                <Navigate to="/" />
+                <Navigate to="/signup/root" />
               )
             }
           />

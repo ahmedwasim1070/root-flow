@@ -12,8 +12,14 @@ export async function signupUser(url, formData) {
       },
       body: JSON.stringify(rootData),
     });
+    const data = await response.json();
 
-    return await response.json();
+    if (!response.ok) {
+      console.error("Error from API : ", data.message);
+      throw new Error(data.message);
+    }
+
+    return data;
   } catch (error) {
     console.error("API Error : ", error);
     throw error;

@@ -4,10 +4,12 @@ export const Header = ({ authUser }) => {
     <>
       <div className="navbar bg-base-100 shadow-sm">
         <div className="navbar-start">
-          <a className="btn btn-ghost text-xl">{authUser.user.fullName}</a>
+          <p className="text-info px-4 text-xl font-bold">
+            {authUser.user.fullName}
+          </p>
         </div>
         <div className="navbar-end">
-          <Link to="/logout" className="btn">
+          <Link to="/logout" className="btn btn-accent">
             Logout
           </Link>
         </div>

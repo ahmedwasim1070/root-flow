@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 import { signupUser } from "../utils/signupUser.js";
 
@@ -88,14 +89,19 @@ function Signup({ apiRoute }) {
     if (disableSubmit != true) {
       signupUser(apiRoute + "signup", formData)
         .then((data) => {
-          setFormData({
-            fullName: "",
-            email: "",
-            contactNumber: "",
-            password: "",
-            confirmPassword: "",
-          });
-          navigate("/login");
+          if (data.isSignedUp === true) {
+            toast.success("Signed Up Successfully ! ");
+            setFormData({
+              fullName: "",
+              email: "",
+              contactNumber: "",
+              password: "",
+              confirmPassword: "",
+            });
+
+            navigate("/login");
+            console.log(`Signup process , ${data.isSignedUp}`);
+          }
         })
         .catch((error) => {
           console.error("Error in API : ", error);
@@ -112,7 +118,7 @@ function Signup({ apiRoute }) {
           }}
         >
           <fieldset className="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
-            <legend className="fieldset-legend">Root Signup</legend>
+            <legend className="fieldset-legend">Signup</legend>
 
             <label className="fieldset-label">
               {errorForm.fullName
@@ -193,11 +199,23 @@ function Signup({ apiRoute }) {
               }`}
               placeholder="Confirm Password"
             />
+            <div className="text-center py-1">
+              <p className="text-accent">
+                Already have an account{" "}
+                <Link
+                  className="text-secondary underline px-1 font-bold"
+                  to="/login"
+                >
+                  Login
+                </Link>
+                ?
+              </p>
+            </div>
 
             <button
               type="submit"
               disabled={disableSubmit}
-              className="btn btn-neutral mt-4"
+              className="btn btn-primary duration-75 hover:btn-neutral mt-4"
             >
               Signup
             </button>
