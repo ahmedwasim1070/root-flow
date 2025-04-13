@@ -4,7 +4,7 @@ export async function signupRoot(url, formData) {
     const rootData = {
       ...dataToSend,
       role: "root",
-      status: "active",
+      status: "approved",
     };
 
     const response = await fetch(url, {

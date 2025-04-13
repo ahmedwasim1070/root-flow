@@ -1,15 +1,40 @@
 import { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
+import { queryUser } from "../utils/queryUser";
+import { updateUser } from "../utils/updateUser";
+
 import { Header } from "../components/Header";
 import { SignupComponent } from "../components/SignupComponent";
-
-import { queryUser } from "../utils/queryUser";
 
 function Home({ apiRoute, authUser }) {
   const [queriedUser, setQueriedUser] = useState([]);
   const [childRegForm, setChildReqForm] = useState(false);
   const permissions = authUser.user.permissions;
+
+  const statusHandler = (e, targetId) => {
+    if (["approved", "rejected", "deleted"].includes(e.target.name)) {
+      console.log(targetId);
+      updateUser(apiRoute + "updateUser", targetId, e.target.name)
+        .then((data) => {
+          toast.success(data.message);
+          queryUser(apiRoute + "queryUser")
+            .then((data) => {
+              if (data.users) {
+                data.users.map((userData) => {
+                  setQueriedUser((prevUsers) => [...prevUsers, userData]);
+                });
+              }
+            })
+            .catch((error) => {
+              console.error(`Error in API : ${error}`);
+            });
+        })
+        .catch((error) => {
+          console.error(`Error in API : ${error}`);
+        });
+    }
+  };
 
   useEffect(() => {
     queryUser(apiRoute + "queryUser")
@@ -65,10 +90,87 @@ function Home({ apiRoute, authUser }) {
                 <p>{authUser.user.status}</p>
               </div>
             </div>
-            <a className="btn btn-secondary text-black font-bold">Settings</a>
           </div>
           {permissions.length > 0 && (
             <div className="mx-2 md:w-[800px] sm:w-[400px] py-6  rounded-xl flex flex-col justify-center items-center gap-y-5 shadow-2xl border-1 border-gray-700 ">
+              <div className="bg-base-300 w-[80%] flex items-center justify-center flex-col gap-y-5 py-4 rounded-sm">
+                <p>Inactive Users</p>{" "}
+                {queriedUser.map(
+                  (userContext, userIdx) =>
+                    userContext.status === "pending" && (
+                      <div
+                        key={userIdx}
+                        className="p-2 w-[95%] border border-error/20 rounded-lg"
+                      >
+                        <div className="flex justify-between py-2 px-4">
+                          <p className="text-success text-lg font-bold">
+                            {userIdx + 1}.
+                          </p>
+                          <div className="flex gap-x-4">
+                            <button
+                              onClick={(e) => {
+                                statusHandler(e, userContext._id);
+                              }}
+                              name="approved"
+                              className=" btn btn-accent"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                statusHandler(e, userContext._id);
+                              }}
+                              name="rejected"
+                              className=" btn btn-error text-base-content"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                        <div className="py-5 px-4">
+                          <p className="text-info font-bold text-xl">
+                            Name :{" "}
+                            <span className="text-base-content text-lg">
+                              {userContext.fullName}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="py-5 px-4">
+                          <p className="text-info font-bold text-xl">
+                            Email :{" "}
+                            <span className="text-base-content text-lg">
+                              {userContext.email}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="py-5 px-4">
+                          <p className="text-info font-bold text-xl">
+                            Contact Number :{" "}
+                            <span className="text-base-content text-lg">
+                              {userContext.contactNumber}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="py-5 px-4">
+                          <p className="text-info font-bold text-xl">
+                            Role :{" "}
+                            <span className="text-base-content text-lg">
+                              {userContext.role}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="py-5 px-4">
+                          <p className="text-info font-bold text-xl">
+                            Status :{" "}
+                            <span className="text-base-content text-lg">
+                              {userContext.status}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )
+                )}
+              </div>
               {permissions.map((permContext, permIdx) => (
                 <section
                   className="w-full flex flex-col items-center"
@@ -89,7 +191,10 @@ function Home({ apiRoute, authUser }) {
                   </div>
                   <hr className="border-1 border-secondary my-5 w-[90%]" />
                   {queriedUser.map((userContext, userIdx) => {
-                    if (userContext.role === permContext) {
+                    if (
+                      userContext.role === permContext &&
+                      userContext.status === "approved"
+                    ) {
                       return (
                         <div
                           className="bg-neutral w-[80%] my-4 mx-6 px-6 py-4 rounded-lg border border-base-300 shadow-2xl"
@@ -164,7 +269,7 @@ function Home({ apiRoute, authUser }) {
                               <span className="text-base-content text-lg">
                                 {userContext.permissions.length === 0
                                   ? "null"
-                                  : userContext.permissions}
+                                  : userContext.permissions.join(", ")}
                               </span>
                             </p>
                           </div>

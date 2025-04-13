@@ -8,6 +8,7 @@ import {
   login,
   logout,
   queryUser,
+  updateUser,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.get("/logout", logout);
 router.post("/queryUser", protectRoute, queryUser);
+router.post("/updateUser", protectRoute, updateUser);
 
 export default router;

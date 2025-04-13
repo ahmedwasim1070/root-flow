@@ -220,3 +220,31 @@ export const queryUser = async (req, res) => {
     return res.status(500).json({ message: "Internel server error" });
   }
 };
+
+export const updateUser = async (req, res) => {
+  const { targetId, targetStatus } = req.body;
+  if (
+    !["approved", "pending", "rejected"].includes(targetStatus) ||
+    !targetId
+  ) {
+    return res.status(400).json({ message: "Invalid request!" });
+  }
+
+  try {
+    const targetUser = await User.findById(targetId);
+
+    if (!targetUser) {
+      return res.status(400).json({ message: "User does not exsist`s" });
+    }
+
+    targetUser.status = targetStatus;
+    await targetUser.save();
+
+    return res
+      .status(200)
+      .json({ message: "User status updated successfully !" });
+  } catch (error) {
+    console.log("Error in updateUser controller", error);
+    return res.status(500).json({ message: "Internel server error !" });
+  }
+};
